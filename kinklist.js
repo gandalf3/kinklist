@@ -218,12 +218,32 @@ $(function(){
             }
             return input;
         },
+        drawExpBubble: function(context, x, y, width) {
+            context.beginPath();
+            var bubble_r = 10
+            context.arc(x, y, bubble_r, Math.PI/2, Math.PI*1.5, false);
+            context.lineTo(x + width, y - bubble_r)
+            context.strokeStyle = 'rgba(0, 0, 0, 0.5)'
+            context.arc(x + width, y, bubble_r, Math.PI*1.5, Math.PI/2, false);
+            context.lineTo(x, y + bubble_r)
+            context.lineWidth = 1;
+            context.stroke();
+        },
         drawLegend: function(context){
             context.font = "bold 13px Arial";
             context.fillStyle = '#000000';
 
             var levels = Object.keys(colors);
-            var x = context.canvas.width - 15 - (120 * levels.length);
+            var spacing = 120
+            var x = context.canvas.width - 15 - (spacing * levels.length);
+            var y = 22
+
+            x -= spacing + 20;
+            var expText = "Have Experience"
+            context.fillText(expText, x, y);
+            inputKinks.drawExpBubble(context, x, y-5, context.measureText(expText).width);
+            x += spacing + 20;
+
             for(var i = 0; i < levels.length; i++) {
                 context.beginPath();
                 context.arc(x + (120 * i), 17, 8, 0, 2 * Math.PI, false);
@@ -234,7 +254,7 @@ $(function(){
                 context.stroke();
 
                 context.fillStyle = '#000000';
-                context.fillText(levels[i], x + 15 + (i * 120), 22);
+                context.fillText(levels[i], x + 15 + (i * 120), y);
             }
         },
         setupCanvas: function(width, height, username){
@@ -284,6 +304,8 @@ $(function(){
                 var y = drawCall.y - 6;
                 context.fillText(drawCall.data.text, x, y);
 
+                var labelsize = context.measureText(drawCall.data.text);
+
                 // Circles
                 for(var i = 0; i < drawCall.data.choices.length; i++){
                     var choice = drawCall.data.choices[i];
@@ -301,10 +323,16 @@ $(function(){
                     context.stroke();
                 }
 
+                if (drawCall.data.has_experience) {
+                    console.log(drawCall.data);
+                    inputKinks.drawExpBubble(context, 10 + drawCall.x, y, labelsize.width + i*20);
+                }
+
             }
         },
         export: function(){
-            var username = prompt("Please enter a name to embed in your image");
+            // var username = prompt("Please enter a name to embed in your image");
+            var username = "asdf";
             if(typeof username !== 'string') return;
             else if (username.length ) username = '(' + username + ')';
 
@@ -384,9 +412,10 @@ $(function(){
                 $cat.find('.kinkRow').each(function(){
                     var $kinkRow = $(this);
                     var drawCall = { y: column.height, type: 'kinkRow', data: {
-                            choices: [],
-                            has_experience: $(this).find('.experience').prop('checked'),
-                            text: $kinkRow.data('kink')
+                        choices: [],
+                        has_experience: $(this).find('.experience').get().some(
+                            (el) => $(el).prop('checked')),
+                        text: $kinkRow.data('kink')
                     }};
                     column.drawStack.push(drawCall);
                     column.height += rowHeight;
@@ -429,7 +458,7 @@ $(function(){
                 }
             }
 
-            //return $(canvas).insertBefore($('#InputList'));
+            // return $(canvas).insertBefore($('#InputList'));
 
             var $fake_link = $('<a>')
                 .attr('download', 'Kinklist.png')
