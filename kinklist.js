@@ -106,7 +106,10 @@ $(function(){
                     .append($exflag, $choices);
                 $('<td>').append($buttons).appendTo($row);
             }
-            var kinkLabel = $('<td>').text(kink.kinkName).appendTo($row);
+            var kinkLabel = $('<td>')
+                .text(kink.kinkName)
+                .attr('title', kink.kinkDesc)
+                .appendTo($row);
             if(kink.kinkDesc) {showDescriptionButton(kink.kinkDesc, kinkLabel);}
             $row.addClass('kink-' + strToClass(kink.kinkName));
             return $row;
