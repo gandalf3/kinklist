@@ -50,7 +50,7 @@ $(function(){
             inputKinks.fillInputList();
         }, 'text');
 
-    }); 
+    });
     
     inputKinks = {
         $columns: [],
@@ -75,6 +75,12 @@ $(function(){
         createChoice: function(){
             var $container = $('<div>').addClass('choices');
             var levels = Object.keys(level);
+            $('<input>')
+                .addClass('experience')
+                .attr('type', 'checkbox')
+                .attr('title', 'Have experience?')
+                .appendTo($container)
+            console.log("meow meow");
             for(var i = 0; i < levels.length; i++) {
                 $('<button>')
                         .addClass('choice')
@@ -164,6 +170,9 @@ $(function(){
             $('#InputList').find('button.choice').on('click', function(){
                 location.hash = inputKinks.updateHash();
             });
+            $('#InputList').find('input.experience').on('click', function(){
+                location.hash = inputKinks.updateHash();
+            });
         },
         init: function(){
             // Set up DOM
@@ -245,7 +254,7 @@ $(function(){
 
             context.font = "bold 24px Arial";
             context.fillStyle = '#000000';
-            context.fillText('Kinklist 1.1 ' + username, 5, 25);
+            context.fillText('Kinklist 1.2 ' + username, 5, 25);
 
             inputKinks.drawLegend(context);
             return { context: context, canvas: canvas };
@@ -374,6 +383,7 @@ $(function(){
                     var $kinkRow = $(this);
                     var drawCall = { y: column.height, type: 'kinkRow', data: {
                             choices: [],
+                            has_experience: $(this).find('.experience').prop('checked'),
                             text: $kinkRow.data('kink')
                     }};
                     column.drawStack.push(drawCall);
@@ -477,6 +487,7 @@ $(function(){
             return output;
         },
         decode: function(base, output){
+            console.log(base, output);
             var hashBase = inputKinks.hashChars.length;
             var outputPow = inputKinks.maxPow(hashBase, Number.MAX_SAFE_INTEGER);
 
@@ -525,6 +536,17 @@ $(function(){
                 if(!lvlInt) lvlInt = 0;
                 hashValues.push(lvlInt);
             });
+            /*
+            * I don't think this is an optimal way of storing the experience
+            * part, as it just stores one bit per value and it doesn't align
+            * with the hash base. However I don't fully understand the hash
+            * function atm however it *is* backwards compatible so w/e
+            */
+            $('#InputList .experience').each(function(){
+                var $this = $(this);
+                var value = $this.prop('checked') ? 1 : 0;
+                hashValues.push(value);
+            });
             return inputKinks.encode(Object.keys(colors).length, hashValues);
         },
         parseHash: function(){
@@ -536,7 +558,16 @@ $(function(){
             $('#InputList .choices').each(function(){
                 var $this = $(this);
                 var value = values[valueIndex++];
-                $this.children().eq(value).addClass('selected');
+                // XXX handling experience specially in here is ugly see xxx
+                // note around line 810
+                $this.children().not('.experience').eq(value).addClass('selected');
+            });
+            $('#InputList .experience').each(function(){
+                var $this = $(this);
+                var value = values[valueIndex++];
+                if (value) {
+                    $this.attr('checked', 'on');
+                }
             });
         },
         saveSelection: function(){
@@ -758,6 +789,10 @@ $(function(){
                     $btn.addClass('big-choice');
                     $btn.appendTo($container);
 
+                    /// XXX see xxx below
+                    $btn.find('.experience').attr('checked',
+                            kink.$choices.find('.experience').prop('checked'))
+
                     $('<span>')
                             .addClass('btn-num-text')
                             .text(btnIndex++)
@@ -769,15 +804,26 @@ $(function(){
                     }
 
                     $btn.on('click', function(){
+                        console.log("o0f");
                         $container.find('.big-choice').removeClass('selected');
                         $btn.addClass('selected');
                         kink.value = text;
-                        $options.fadeOut(200, function(){
-                            $options.show();
-                            inputKinks.inputPopup.showNext();
-                        });
-                        var choiceClass = strToClass(text);
-                        kink.$choices.find('.' + choiceClass).click();
+                        // XXX this is a little hacky, we should probably treat
+                        // this box separately from choices entirely but it works
+                        // for now
+                        if ($btn.has('.experience')) {
+                            var $exp = kink.$choices.find('.experience');
+                            $exp.click();
+                            $btn.find('.experience').attr('checked', $exp.prop('checked'))
+                        }
+                        else {
+                            $options.fadeOut(200, function(){
+                                $options.show();
+                                inputKinks.inputPopup.showNext();
+                            });
+                            var choiceClass = strToClass(text);
+                            kink.$choices.find('.' + choiceClass).click();
+                        }
                     });
                 });
                 return $container;
@@ -883,6 +929,6 @@ $(function(){
         $('#StartBtn').on('click', inputKinks.inputPopup.show);
         $('#InputCurrent .closePopup, #InputOverlay').on('click', function(){
             $popup.fadeOut();
-        });                    
+        });
     })();
 });
