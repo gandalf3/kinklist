@@ -324,7 +324,6 @@ $(function(){
                 }
 
                 if (drawCall.data.has_experience) {
-                    console.log(drawCall.data);
                     inputKinks.drawExpBubble(context, 10 + drawCall.x, y, labelsize.width + i*20);
                 }
 
