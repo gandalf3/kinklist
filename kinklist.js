@@ -72,15 +72,15 @@ $(function(){
 
             return $category;
         },
-        createChoice: function(){
-            var $container = $('<div>').addClass('choices');
-            var levels = Object.keys(level);
-            $('<input>')
+        createExperienceFlag: function() {
+            return $('<input>')
                 .addClass('experience')
                 .attr('type', 'checkbox')
                 .attr('title', 'Have experience?')
-                .appendTo($container)
-            console.log("meow meow");
+        },
+        createChoice: function(){
+            var $container = $('<div>').addClass('choices');
+            var levels = Object.keys(level);
             for(var i = 0; i < levels.length; i++) {
                 $('<button>')
                         .addClass('choice')
@@ -100,9 +100,10 @@ $(function(){
             var $row = $('<tr>').data('kink', kink.kinkName).addClass('kinkRow');
             for(var i = 0; i < fields.length; i++) {
                 var $choices = inputKinks.createChoice();
+                var $exflag = inputKinks.createExperienceFlag();
                 $choices.data('field', fields[i]);
                 $choices.addClass('choice-' + strToClass(fields[i]));
-                $('<td>').append($choices).appendTo($row);
+                $('<td>').append($exflag, $choices).appendTo($row);
             }
             var kinkLabel = $('<td>').text(kink.kinkName).appendTo($row);
             if(kink.kinkDesc) {showDescriptionButton(kink.kinkDesc, kinkLabel);}
@@ -558,9 +559,7 @@ $(function(){
             $('#InputList .choices').each(function(){
                 var $this = $(this);
                 var value = values[valueIndex++];
-                // XXX handling experience specially in here is ugly see xxx
-                // note around line 810
-                $this.children().not('.experience').eq(value).addClass('selected');
+                $this.children().eq(value).addClass('selected');
             });
             $('#InputList .experience').each(function(){
                 var $this = $(this);
@@ -784,14 +783,23 @@ $(function(){
             generatePrimary: function(kink){
                 var $container = $('<div>');
                 var btnIndex = 0;
-                $('.legend > div').each(function(){
+                var $expflag = $('.legend.experience-container').clone();
+                /// XXX see xxx below
+                // $btn.find('.experience').attr('checked',
+                //                               kink.$choices.find('.experience').prop('checked'))
+                // // XXX this is a little hacky, we should probably treat
+                // // this box separately from choices entirely but it works
+                // // for now
+                // if ($btn.has('.experience')) {
+                //     var $exp = kink.$choices.find('.experience');
+                //     $exp.click();
+                //     $btn.find('.experience').attr('checked', $exp.prop('checked'))
+                // }
+                // else {
+                $('.legend .choices > div').each(function(){
                     var $btn = $(this).clone();
                     $btn.addClass('big-choice');
                     $btn.appendTo($container);
-
-                    /// XXX see xxx below
-                    $btn.find('.experience').attr('checked',
-                            kink.$choices.find('.experience').prop('checked'))
 
                     $('<span>')
                             .addClass('btn-num-text')
@@ -808,22 +816,12 @@ $(function(){
                         $container.find('.big-choice').removeClass('selected');
                         $btn.addClass('selected');
                         kink.value = text;
-                        // XXX this is a little hacky, we should probably treat
-                        // this box separately from choices entirely but it works
-                        // for now
-                        if ($btn.has('.experience')) {
-                            var $exp = kink.$choices.find('.experience');
-                            $exp.click();
-                            $btn.find('.experience').attr('checked', $exp.prop('checked'))
-                        }
-                        else {
                             $options.fadeOut(200, function(){
                                 $options.show();
                                 inputKinks.inputPopup.showNext();
                             });
-                            var choiceClass = strToClass(text);
-                            kink.$choices.find('.' + choiceClass).click();
-                        }
+                        var choiceClass = strToClass(text);
+                        kink.$choices.find('.' + choiceClass).click();
                     });
                 });
                 return $container;
