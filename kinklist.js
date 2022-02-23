@@ -937,10 +937,10 @@ $(function(){
             }
 
             var btn = -1;
-            if(e.keyCode >= 96 && e.keyCode <= 101) {
+            if(e.keyCode >= 96 && e.keyCode <= 102) {
                 btn = e.keyCode - 96;
             }
-            else if(e.keyCode >= 48 && e.keyCode <= 53) {
+            else if(e.keyCode >= 48 && e.keyCode <= 54) {
                 btn = e.keyCode - 48;
             }
             else {
