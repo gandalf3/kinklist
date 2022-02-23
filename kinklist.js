@@ -38,8 +38,6 @@ var level = {};
 
 $(function(){
 
-    var imgurClientId = '9db53e5936cd02f';
-
     $("#listType").change(function() {
         fileToRead = $("#listType").val() + '.txt';
         $.get(fileToRead, function(data) {
@@ -433,30 +431,13 @@ $(function(){
 
             //return $(canvas).insertBefore($('#InputList'));
 
-            // Send canvas to imgur
-            $.ajax({
-                url: 'https://api.imgur.com/3/image',
-                type: 'POST',
-                headers: {
-                    // Your application gets an imgurClientId from Imgur
-                    Authorization: 'Client-ID ' + imgurClientId,
-                    Accept: 'application/json'
-                },
-                data: {
-                    // convert the image data to base64
-                    image:  canvas.toDataURL().split(',')[1],
-                    type: 'base64'
-                },
-                success: function(result) {
-                    $('#Loading').hide();
-                    var url = 'https://i.imgur.com/' + result.data.id + '.png';
-                    $('#URL').val(url).fadeIn();
-                },
-                fail: function(){
-                    $('#Loading').hide();
-                    alert('Failed to upload to imgur, could not connect');
-                }
-            });
+            var $fake_link = $('<a>')
+                .attr('download', 'Kinklist.png')
+                .attr('href', canvas.toDataURL('image/png').replace("image/png", "image/octet-stream"))
+                .appendTo($('body'));
+            $fake_link[0].click();
+            $fake_link.remove();
+
         },
         encode: function(base, input){
             var hashBase = inputKinks.hashChars.length;
@@ -940,7 +921,7 @@ $(function(){
 
             console.log(btn);
             var $btn = $options.find('.buttons').children().eq(btn);
-            // $btn.click();
+            $btn.click();
         });
         $('#StartBtn').on('click', inputKinks.inputPopup.show);
         $('#InputCurrent .closePopup, #InputOverlay').on('click', function(){
