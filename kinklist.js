@@ -921,7 +921,6 @@ $(function(){
         };
 
         $(window).on('keydown', function(e){
-            console.log(e);
             if(e.altKey || e.shiftKey || e.ctrlKey) return;
             if(!$popup.is(':visible')) return;
 
@@ -947,7 +946,6 @@ $(function(){
                 return;
             }
 
-            console.log(btn);
             var $btn = $options.find('.buttons').children().eq(btn);
             $btn.click();
         });
