@@ -333,8 +333,7 @@ $(function(){
             }
         },
         export: function(){
-            // var username = prompt("Please enter a name to embed in your image");
-            var username = "asdf";
+            var username = prompt("Please enter a name to embed in your image");
             if(typeof username !== 'string') return;
             else if (username.length ) username = '(' + username + ')';
 
