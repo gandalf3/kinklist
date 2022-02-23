@@ -103,7 +103,10 @@ $(function(){
                 var $exflag = inputKinks.createExperienceFlag();
                 $choices.data('field', fields[i]);
                 $choices.addClass('choice-' + strToClass(fields[i]));
-                $('<td>').append($exflag, $choices).appendTo($row);
+                $buttons = $('<div>')
+                    .addClass('buttons-' + strToClass(fields[i]))
+                    .append($exflag, $choices);
+                $('<td>').append($buttons).appendTo($row);
             }
             var kinkLabel = $('<td>').text(kink.kinkName).appendTo($row);
             if(kink.kinkDesc) {showDescriptionButton(kink.kinkDesc, kinkLabel);}
@@ -488,7 +491,6 @@ $(function(){
             return output;
         },
         decode: function(base, output){
-            console.log(base, output);
             var hashBase = inputKinks.hashChars.length;
             var outputPow = inputKinks.maxPow(hashBase, Number.MAX_SAFE_INTEGER);
 
@@ -738,13 +740,12 @@ $(function(){
             return $selected.data('level');
         }
 
-        function getChoicesElement(category, kink, field){
+        function getButtonsElement(category, kink, field){
             var selector = '.cat-' + strToClass(category);
             selector += ' .kink-' + strToClass(kink.kinkName);
-            selector += ' .choice-' + strToClass(field);
+            selector += ' .buttons-' + strToClass(field);
 
-            var $choices = $(selector);
-            return $choices;
+            return $(selector);
         }
 
         inputKinks.getAllKinks = function(){
@@ -760,10 +761,18 @@ $(function(){
                     var field = fields[j];
                     for(var k = 0; k < kinkArr.length; k++){
                         var kink = kinkArr[k];
-                        var $choices = getChoicesElement(category, kink, field);
-                        var value = getChoiceValue($choices);
-                        var obj = { category: category, kink: {name: kink.kinkName, desc: kink.kinkDesc}, field: field, value: value, $choices: $choices, showField: (fields.length >= 2)};
-                        list.push(obj);
+                        var $buttons = getButtonsElement(category, kink, field);
+                        var value = getChoiceValue($buttons.find('.choices'));
+                        var obj = { category: category,
+                                    kink: {
+                                        name: kink.kinkName,
+                                        desc: kink.kinkDesc
+                                    },
+                                    field: field,
+                                    value: value,
+                                    $buttons: $buttons,
+                                    showField: (fields.length >= 2)
+                                  }; list.push(obj);
                     }
                 }
 
@@ -782,29 +791,29 @@ $(function(){
             },
             generatePrimary: function(kink){
                 var $container = $('<div>');
+                $container.addClass('buttons');
                 var btnIndex = 0;
-                var $expflag = $('.legend.experience-container').clone();
-                /// XXX see xxx below
-                // $btn.find('.experience').attr('checked',
-                //                               kink.$choices.find('.experience').prop('checked'))
-                // // XXX this is a little hacky, we should probably treat
-                // // this box separately from choices entirely but it works
-                // // for now
-                // if ($btn.has('.experience')) {
-                //     var $exp = kink.$choices.find('.experience');
-                //     $exp.click();
-                //     $btn.find('.experience').attr('checked', $exp.prop('checked'))
-                // }
-                // else {
+                var $expButton = $('.legend .experience-container').clone();
+
+                $expButton
+                    .addClass('big-choice')
+                    .find('.experience')
+                    .prop('checked',
+                          kink.$buttons.find('.experience').prop('checked'));
+
+                $expButton.on('click', function() {
+                        var $exp = kink.$buttons.find('.experience');
+                        $exp.click();
+                        $expButton.find('.experience').prop('checked', $exp.prop('checked'))
+
+                });
+                $expButton.appendTo($container);
+
+
                 $('.legend .choices > div').each(function(){
                     var $btn = $(this).clone();
                     $btn.addClass('big-choice');
                     $btn.appendTo($container);
-
-                    $('<span>')
-                            .addClass('btn-num-text')
-                            .text(btnIndex++)
-                            .appendTo($btn)
 
                     var text = $btn.text().trim().replace(/[0-9]/g, '');
                     if(kink.value === text) {
@@ -812,7 +821,6 @@ $(function(){
                     }
 
                     $btn.on('click', function(){
-                        console.log("o0f");
                         $container.find('.big-choice').removeClass('selected');
                         $btn.addClass('selected');
                         kink.value = text;
@@ -821,9 +829,17 @@ $(function(){
                                 inputKinks.inputPopup.showNext();
                             });
                         var choiceClass = strToClass(text);
-                        kink.$choices.find('.' + choiceClass).click();
+                        kink.$buttons.find('.' + choiceClass).click();
                     });
                 });
+
+                $container.children('.big-choice').each(function() {
+                    $('<span>')
+                        .addClass('btn-num-text')
+                        .text(btnIndex++)
+                        .appendTo($(this))
+                });
+
                 return $container;
             },
             generateSecondary: function(kink){
@@ -896,6 +912,7 @@ $(function(){
         };
 
         $(window).on('keydown', function(e){
+            console.log(e);
             if(e.altKey || e.shiftKey || e.ctrlKey) return;
             if(!$popup.is(':visible')) return;
 
@@ -921,8 +938,9 @@ $(function(){
                 return;
             }
 
-            var $btn = $options.find('.big-choice').eq(btn);
-            $btn.click();
+            console.log(btn);
+            var $btn = $options.find('.buttons').children().eq(btn);
+            // $btn.click();
         });
         $('#StartBtn').on('click', inputKinks.inputPopup.show);
         $('#InputCurrent .closePopup, #InputOverlay').on('click', function(){
