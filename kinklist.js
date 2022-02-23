@@ -304,11 +304,11 @@ $(function(){
             }
         },
         export: function(){
-            var username = prompt("Please enter your name");
+            var username = prompt("Please enter a name to embed in your image");
             if(typeof username !== 'string') return;
             else if (username.length ) username = '(' + username + ')';
 
-            $('#Loading').fadeIn();
+            // $('#Loading').fadeIn();
             $('#URL').fadeOut();
 
             // Constants
