@@ -61,7 +61,7 @@ td + td { border-left-style:none }
 }
 
 .choice {
-	opacity:.35;
+	opacity:.20;
 	overflow:hidden;
 	text-indent:100px;
 	border:solid #000 1px;
